@@ -15,6 +15,7 @@ var customersRouter = require("./routes/customer/router");
 var employeesRouter = require("./routes/employee/router");
 var ordersRouter = require("./routes/order/router");
 var questionsRouter = require("./routes/questions/router");
+var mediaRouter = require("./routes/media/router");
 const { CONNECTION_STRING, DB_NAME } = require("./constants/db");
 const cors = require("cors");
 
@@ -55,6 +56,11 @@ app.use(
 app.use("/employees", employeesRouter);
 app.use("/orders", ordersRouter);
 app.use("/questions", questionsRouter);
+app.use(
+  "/media",
+  passport.authenticate("jwt", { session: false }),
+  mediaRouter
+);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
