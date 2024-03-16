@@ -9,12 +9,7 @@ module.exports = {
         .min(
           yup.ref("createDate"),
           "Shipped date must be greater than create date"
-        )
-        .max(
-          new Date(),
-          "Shipped date must be less than or equal to current date"
         ),
-
       paymentType: yup
         .string()
         .required()
@@ -88,6 +83,41 @@ module.exports = {
         .test("validationEmployeeId", "Invalid id", (value) => {
           return ObjectId.isValid(value);
         }),
+    }),
+  }),
+
+  validationQuerySchema: yup.object().shape({
+    query: yup.object({
+      customerId: yup
+        .string()
+        .test(
+          "validation ObjectId",
+          "${path} is not valid ObjectID",
+          (value) => {
+            if (!value) return true;
+            return ObjectId.isValid(value);
+          }
+        ),
+
+      employeeId: yup
+        .string()
+        .test(
+          "validation ObjectId",
+          "${path} is not valid ObjectID",
+          (value) => {
+            if (!value) return true;
+            return ObjectId.isValid(value);
+          }
+        ),
+      paymentType: yup
+        .string()
+        .oneOf(["CASH", "CREDIT_CARD"], "Invalid payment type"),
+      status: yup
+        .string()
+        .oneOf(
+          ["WAITING", "COMPLETED", "CANCELED", "REJECTED", "DELIVERING"],
+          "Invalid status"
+        ),
     }),
   }),
 };

@@ -8,6 +8,8 @@ const {
   updateStatus,
   updateShippingDate,
   updateEmployee,
+  update,
+  deleteFunc,
 } = require("./controller");
 const { validateSchema, checkIdSchema } = require("../../utils");
 const {
@@ -15,11 +17,25 @@ const {
   updateStatusSchema,
   updateShippingDateSchema,
   updateEmployeeSchema,
+  validationQuerySchema,
 } = require("./validation");
 
 router.route("/").get(getAll).post(validateSchema(orderSchema), create);
 
-router.route("/:id").get(validateSchema(checkIdSchema), getDetail);
+router
+  .route("/:id")
+  .get(validateSchema(checkIdSchema), getDetail)
+  .put(
+    validateSchema(checkIdSchema),
+    validateSchema(validationQuerySchema),
+    update
+  )
+  .patch(
+    validateSchema(checkIdSchema),
+    validateSchema(validationQuerySchema),
+    update
+  )
+  .delete(validateSchema(checkIdSchema), deleteFunc);
 router
   .route("/status/:id")
   .patch(
@@ -41,5 +57,7 @@ router
     validateSchema(updateEmployeeSchema),
     updateEmployee
   );
+
+router.delete("/:id");
 
 module.exports = router;

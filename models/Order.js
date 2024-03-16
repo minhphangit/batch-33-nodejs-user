@@ -8,6 +8,9 @@ const productSchema = new Schema(
       ref: "products",
       required: true,
     },
+    name: {
+      type: String,
+    },
     quantity: {
       type: Number,
       required: true,
@@ -53,13 +56,11 @@ const orderSchema = new Schema(
     },
     paymentType: {
       type: String,
-      required: true,
       default: "CASH",
       enum: ["CASH", "CREDIT_CARD"],
     },
     status: {
       type: String,
-      required: true,
       enum: ["WAITING", "COMPLETED", "CANCELED", "REJECTED", "DELIVERING"],
       default: "WAITING",
     },
@@ -71,6 +72,11 @@ const orderSchema = new Schema(
     employeeId: {
       type: Schema.Types.ObjectId,
       ref: "employees",
+    },
+    isDeleted: {
+      type: Boolean,
+      required: true,
+      default: false,
     },
     productList: [productSchema],
   },

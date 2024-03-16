@@ -256,18 +256,18 @@ module.exports = {
 
       if (product.categoryId.toString() !== categoryId.toString()) {
         const category = await Category.findOne({
-          _id: id,
+          _id: categoryId,
           isDeleted: false,
         });
 
         if (!category) {
-          return res.send(404, { message: "Category Unavailable" });
+          return res.send(404, { message: " " });
         }
       }
 
       if (product.supplierId.toString() !== supplierId.toString()) {
         const supplier = await Supplier.findOne({
-          _id: id,
+          _id: supplierId,
           isDeleted: false,
         });
 

@@ -379,7 +379,7 @@ module.exports = {
 
       const conditionFind = {
         $expr: {
-          $eq: [{ $year: "$birthDay" }, year],
+          $eq: [{ $year: "$birthday" }, year],
         },
       };
 
@@ -401,13 +401,13 @@ module.exports = {
     try {
       const year = Number(req.query.year);
       const conditionFind = {
-        $expr: { $eq: [{ $year: "$birthDay" }, year] },
+        $expr: { $eq: [{ $year: "$birthday" }, year] },
       };
 
       let results = await Customer.aggregate()
         .match(conditionFind)
         .addFields({
-          birthYear: { $year: "$birthDay" },
+          birthYear: { $year: "$birthday" },
         });
       let total = await Customer.countDocuments();
 
@@ -434,10 +434,10 @@ module.exports = {
         $expr: {
           $and: [
             {
-              $eq: [{ $dayOfMonth: "$birthDay" }, { $dayOfMonth: today }],
+              $eq: [{ $dayOfMonth: "$birthday" }, { $dayOfMonth: today }],
             },
             {
-              $eq: [{ $month: "$birthDay" }, { $month: today }],
+              $eq: [{ $month: "$birthday" }, { $month: today }],
             },
           ],
         },
@@ -770,10 +770,10 @@ module.exports = {
         $expr: {
           $and: [
             {
-              $eq: [{ $dayOfMonth: "$birthDay" }, { $dayOfMonth: today }],
+              $eq: [{ $dayOfMonth: "$birthday" }, { $dayOfMonth: today }],
             },
             {
-              $eq: [{ $month: "$birthDay" }, { $month: today }],
+              $eq: [{ $month: "$birthday" }, { $month: today }],
             },
           ],
         },
@@ -1006,7 +1006,7 @@ module.exports = {
           price: { $first: "$product.price" },
           discount: { $first: "$product.discount" },
           stock: { $first: "$product.stock" },
-          birthDay: { $sum: "$productList.quantity" },
+          birthday: { $sum: "$productList.quantity" },
           inBill: { $sum: 1 },
         });
 
@@ -1052,7 +1052,7 @@ module.exports = {
           email: { $first: "$customer.email" },
           phoneNumber: { $first: "$customer.phoneNumber" },
           address: { $first: "$customer.address" },
-          birthDay: { $first: "$customer.birthDay" },
+          birthday: { $first: "$customer.birthday" },
         });
 
       let total = await Order.countDocuments();
@@ -1105,7 +1105,7 @@ module.exports = {
           email: { $first: "$customer.email" },
           phoneNumber: { $first: "$customer.phoneNumber" },
           address: { $first: "$customer.address" },
-          birthDay: { $first: "$customer.birthDay" },
+          birthday: { $first: "$customer.birthday" },
           total: { $sum: "$total" },
         });
 
@@ -1260,7 +1260,7 @@ module.exports = {
           email: { $first: "$employee.email" },
           phoneNumber: { $first: "$employee.phoneNumber" },
           address: { $first: "$employee.address" },
-          birthDay: { $first: "$employee.birthDay" },
+          birthday: { $first: "$employee.birthday" },
           total: { $sum: "$total" },
         });
 
@@ -1462,7 +1462,7 @@ module.exports = {
           email: { $first: "$employee.email" },
           phoneNumber: { $first: "$employee.phoneNumber" },
           address: { $first: "$employee.address" },
-          birthDay: { $first: "$employee.birthDay" },
+          birthday: { $first: "$employee.birthday" },
           total: { $sum: "$total" },
         })
         .sort({ total: -1 })
@@ -1524,7 +1524,7 @@ module.exports = {
           email: { $first: "$customer.email" },
           phoneNumber: { $first: "$customer.phoneNumber" },
           address: { $first: "$customer.address" },
-          birthDay: { $first: "$customer.birthDay" },
+          birthday: { $first: "$customer.birthday" },
           total: { $sum: "$total" },
         })
         .sort({ total: -1 })

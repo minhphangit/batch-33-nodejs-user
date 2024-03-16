@@ -5,7 +5,9 @@ const { fuzzySearch, asyncForEach } = require("../../utils");
 module.exports = {
   getAll: async (req, res, next) => {
     try {
-      let results = await Order.find();
+      let results = await Order.find({
+        isDeleted: false,
+      });
 
       return res.send(200, {
         payload: results,
@@ -54,7 +56,10 @@ module.exports = {
   getDetail: async (req, res, next) => {
     try {
       const { id } = req.params;
-      let results = await Order.findById(id);
+      let results = await Order.findOne({
+        _id: id,
+        isDeleted: false,
+      });
 
       if (results) {
         return res.send(200, {
@@ -121,6 +126,7 @@ module.exports = {
         finalProductList.push({
           productId: item.productId,
           quantity: item.quantity,
+          name: product.name,
           price: product.price,
           discount: product.discount,
         });
@@ -154,7 +160,6 @@ module.exports = {
         payload: result,
       });
     } catch (err) {
-      console.log("««««« err »»»»»", err);
       return sendErr(res, err.errors);
     }
   },
@@ -266,6 +271,81 @@ module.exports = {
     } catch (error) {
       console.log("««««« error »»»»»", error);
       return sendErr(res, error.errors);
+    }
+  },
+
+  deleteFunc: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const result = await Order.findByIdAndUpdate(
+        {
+          _id: id,
+          isDeleted: false,
+        },
+        { isDeleted: true },
+        { new: true }
+      );
+      if (result) {
+        return res.status(200).json({
+          code: 200,
+          message: "Delete order successfully",
+        });
+      }
+      return res.status(404).json({
+        code: 404,
+        message: "Order not found",
+      });
+    } catch (err) {
+      return res.status(500).json({
+        code: 500,
+        error: err,
+      });
+    }
+  },
+
+  update: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const error = [];
+      const { productList } = req.body;
+
+      const order = await Order.findOne({ _id: id, isDeleted: false });
+      if (!order) {
+        return res.status(404).json({
+          code: 404,
+          message: "Order not found",
+        });
+      }
+
+      if (error.length > 0) {
+        return res.status(400).json({
+          code: 400,
+          message: "Error ",
+          error,
+        });
+      }
+      const updateOrder = await Order.findByIdAndUpdate(
+        id,
+        {
+          productList: productList,
+        },
+        { new: true }
+      );
+      if (updateOrder) {
+        return res.status(200).json({
+          code: 200,
+          message: "Update order successfully",
+          payload: updateOrder,
+        });
+      }
+      return res.status(400).json({
+        message: "Update order failed",
+      });
+    } catch (err) {
+      return res.status(500).json({
+        code: 500,
+        error: err,
+      });
     }
   },
 };
