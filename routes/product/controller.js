@@ -1,6 +1,8 @@
-const { sendErr, generationID, writeFileSync } = require("../../utils");
+const { sendErr } = require("../../utils");
 const { Product, Category, Supplier } = require("../../models");
 const { fuzzySearch } = require("../../utils");
+
+const upload = require("../../middlewares/fileMulter");
 
 module.exports = {
   getAll: async (req, res, next) => {
@@ -136,6 +138,8 @@ module.exports = {
 
   create: async (req, res, next) => {
     try {
+      console.log("««««« req.body »»»»»", req.body);
+      console.log("««««« req.files »»»»»", req.files);
       const {
         name,
         description,
@@ -144,7 +148,6 @@ module.exports = {
         stock,
         categoryId,
         supplierId,
-        image,
       } = req.body;
 
       const getCategory = Category.findOne({
@@ -169,8 +172,15 @@ module.exports = {
       if (existSupplier.isDeleted) error.push("Supplier is deleted");
 
       if (error.length > 0) {
-        return res.send(400, { message: "Unavailable", error });
+        return res.status(400).json({ message: "Unavailable", error });
       }
+      const dataInsert = req.files.reduce((prev, file) => {
+        prev.push({
+          name: file.filename,
+          location: file.path,
+        });
+        return prev;
+      }, []);
 
       const newRecord = new Product({
         name,
@@ -180,20 +190,21 @@ module.exports = {
         stock,
         categoryId,
         supplierId,
-        image,
+        images: dataInsert,
       });
 
       let result = await newRecord.save();
 
       if (result) {
-        return res.send(202, {
+        return res.status(202).json({
           message: "Create a new Product successfully",
           payload: result,
         });
       }
     } catch (error) {
-      console.log("««««« error »»»»»", error);
-      return sendErr(res, error.errors);
+      return res
+        .status(500)
+        .json({ message: "Internal Server Error", error: error.message });
     }
   },
   fakeData: async (req, res, next) => {
@@ -345,7 +356,7 @@ module.exports = {
   //       return item;
   //     });
 
-  //     writeFileSync("data/products.json", data);
+  //     ("data/products.json", data);
 
   //     return res.send(400, {
   //       message: "Update Product successfully",
@@ -394,7 +405,7 @@ module.exports = {
   //       return item;
   //     });
 
-  //     writeFileSync("data/products.json", data);
+  //     ("data/products.json", data);
 
   //     return res.send(202, {
   //       message: "Update Product data successfully",

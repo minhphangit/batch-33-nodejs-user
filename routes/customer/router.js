@@ -1,6 +1,15 @@
 var express = require("express");
 var router = express.Router();
+const passport = require("passport");
 
+const {
+  passportVerifyToken, // USING
+  passportVerifyAccount,
+  passportConfigBasic,
+} = require("../../middlewares/passport");
+passport.use(passportVerifyToken);
+passport.use(passportVerifyAccount);
+passport.use(passportConfigBasic);
 const {
   getAll,
   create,
@@ -12,7 +21,14 @@ const {
 const { validateSchema, checkIdSchema } = require("../../utils");
 const { customerSchema, customerPatchSchema } = require("./validation");
 
-router.route("/").get(getAll).post(validateSchema(customerSchema), create);
+router
+  .route("/")
+  .get(getAll)
+  .post(
+    validateSchema(customerSchema),
+    passport.authenticate("jwt", { session: false }),
+    create
+  );
 
 router.get("/search", search);
 

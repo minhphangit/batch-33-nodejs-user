@@ -1,4 +1,4 @@
-const { sendErr, fuzzySearch, writeFileSync } = require("../../utils");
+const { sendErr, fuzzySearch } = require("../../utils");
 const { Employee } = require("../../models");
 
 module.exports = {

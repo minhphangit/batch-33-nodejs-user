@@ -30,7 +30,6 @@ module.exports = {
           //   },
           //   'Media',
           // );
-          console.log(req.file);
           const media = new Media({
             location: req.file.path,
             name: req.file.filename,

@@ -50,11 +50,7 @@ app.use("/auth", authRouter);
 app.use("/categories", categoriesRouter);
 app.use("/products", productsRouter);
 app.use("/suppliers", suppliersRouter);
-app.use(
-  "/customers",
-  passport.authenticate("jwt", { session: false }),
-  customersRouter
-);
+app.use("/customers", customersRouter);
 app.use("/employees", employeesRouter);
 app.use("/orders", ordersRouter);
 app.use("/questions", questionsRouter);

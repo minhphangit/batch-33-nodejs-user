@@ -1,6 +1,6 @@
 const { Category } = require("../../models");
 
-const { sendErr, fuzzySearch, writeFileSync } = require("../../utils");
+const { sendErr, fuzzySearch } = require("../../utils");
 
 module.exports = {
   getAll: async (req, res, next) => {

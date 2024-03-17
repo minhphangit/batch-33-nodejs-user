@@ -29,6 +29,7 @@ const productSchema = new Schema(
       maxLength: [3000, "Description can't exceed 3000 characters"],
       required: [true, "description can't be left blank"],
     },
+    images: [],
     // Reference to Category
     categoryId: {
       type: Schema.Types.ObjectId,

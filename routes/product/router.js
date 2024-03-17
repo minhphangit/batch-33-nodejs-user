@@ -1,5 +1,6 @@
 var express = require("express");
 var router = express.Router();
+const upload = require("../../middlewares/fileMulter");
 
 const {
   getAll,
@@ -14,7 +15,10 @@ const {
 const { validateSchema, checkIdSchema } = require("../../utils");
 const { productSchema, validationQuerySchema } = require("./validation");
 
-router.route("/").get(getAll).post(validateSchema(productSchema), create);
+router
+  .route("/")
+  .get(getAll)
+  .post(upload.array("files", 5), validateSchema(productSchema), create);
 
 router.route("/list").get(getList);
 router.get("/search", validateSchema(validationQuerySchema), search);
