@@ -2,10 +2,9 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const { Media } = require("../../models");
-
+const cloudinary = require("../../utils/cloudinary");
 const upload = require("../../middlewares/fileMulter");
 const {
-  insertDocument,
   updateDocument,
   findDocument,
   insertDocuments,
@@ -14,59 +13,58 @@ const {
 module.exports = {
   uploadSingle: (req, res, next) =>
     // file => tên biến nhận từ FE
-    upload.single("file")(req, res, async (err) => {
-      try {
-        if (err instanceof multer.MulterError) {
-          res.status(500).json({ type: "MulterError", err: err });
-        } else if (err) {
-          res.status(500).json({ type: "UnknownError", err: err });
-        } else {
-          // const response = await insertDocument(
-          //   {
-          //     location: req.file.path,
-          //     name: req.file.filename,
-          //     employeeId: req.user._id,
-          //     size: req.file.size,
-          //   },
-          //   'Media',
-          // );
-          const media = new Media({
-            location: req.file.path,
-            name: req.file.filename,
-            customerId: req.user._id,
-            size: req.file.size,
-          });
+    upload.single("image")(req, res, async (err) => {
+      cloudinary.uploader.upload(req.file.path, async (error, result) => {
+        try {
+          if (err instanceof multer.MulterError) {
+            res.status(500).json({ type: "MulterError", err: err });
+          } else if (error) {
+            res.status(500).json({ type: "Upload file error", err: error });
+          } else {
+            const media = new Media({
+              location: result.url,
+              name: req.file.filename,
+              customerId: req.user._id,
+              size: req.file.size,
+            });
 
-          const response = await media.save();
+            const response = await media.save();
 
-          res
-            .status(200)
-            .json({ message: "upload successfully", payload: response });
+            res
+              .status(200)
+              .json({ message: "upload successfully", payload: response });
+          }
+        } catch (error) {
+          res.status(500).json({ message: "Upload file error", error });
         }
-      } catch (error) {
-        res.status(500).json({ message: "Upload file error", error });
-      }
+      });
     }),
 
   uploadMultiple: (req, res) =>
-    upload.array("files", 3)(req, res, async (err) => {
+    upload.array("images", 5)(req, res, async (err) => {
       try {
         if (err instanceof multer.MulterError) {
           res.status(500).json({ type: "MulterError", err: err });
         } else if (err) {
           res.status(500).json({ type: "UnknownError", err: err });
         } else {
-          const dataInsert = req.files.reduce((prev, file) => {
-            prev.push({
-              name: file.filename,
-              location: file.path,
-              size: file.size,
-              customerId: req.user._id,
-            });
-            return prev;
-          }, []);
+          const files = req.files;
 
-          // sử dụng Media.insertMany()
+          // Tạo một mảng promises để upload tất cả file lên Cloudinary
+          const uploadPromises = files.map((file) => {
+            return cloudinary.uploader.upload(file.path, {
+              folder: "nodejs_images",
+            });
+          });
+          // Chờ cho tất cả upload hoàn tất
+          const results = await Promise.all(uploadPromises);
+
+          const dataInsert = results.map((result, index) => ({
+            location: result.secure_url,
+            name: files[index].filename,
+            size: files[index].size,
+            customerId: req.user._id,
+          }));
 
           const response = await insertDocuments(dataInsert, "Media");
 

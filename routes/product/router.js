@@ -18,7 +18,7 @@ const { productSchema, validationQuerySchema } = require("./validation");
 router
   .route("/")
   .get(getAll)
-  .post(upload.array("files", 5), validateSchema(productSchema), create);
+  .post(upload.array("images", 5), validateSchema(productSchema), create);
 
 router.route("/list").get(getList);
 router.get("/search", validateSchema(validationQuerySchema), search);

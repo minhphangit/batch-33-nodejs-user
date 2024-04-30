@@ -1,8 +1,7 @@
 const { sendErr } = require("../../utils");
 const { Product, Category, Supplier } = require("../../models");
 const { fuzzySearch } = require("../../utils");
-
-const upload = require("../../middlewares/fileMulter");
+const cloudinary = require("../../utils/cloudinary");
 
 module.exports = {
   getAll: async (req, res, next) => {
@@ -138,8 +137,6 @@ module.exports = {
 
   create: async (req, res, next) => {
     try {
-      console.log("««««« req.body »»»»»", req.body);
-      console.log("««««« req.files »»»»»", req.files);
       const {
         name,
         description,
@@ -174,14 +171,13 @@ module.exports = {
       if (error.length > 0) {
         return res.status(400).json({ message: "Unavailable", error });
       }
-      const dataInsert = req.files.reduce((prev, file) => {
-        prev.push({
-          name: file.filename,
-          location: file.path,
-        });
-        return prev;
-      }, []);
 
+      const dataInsert = req.files.map((file) => ({
+        url: file.path, // Đường dẫn tạm của file trên máy chủ
+        publicId: file.filename, // Tên file
+        size: file.size, // Kích thước file
+        name: file.originalname,
+      }));
       const newRecord = new Product({
         name,
         price,
@@ -192,7 +188,21 @@ module.exports = {
         supplierId,
         images: dataInsert,
       });
-
+      const uploadPromises = dataInsert.map((file) => {
+        return cloudinary.uploader.upload(file.url, {
+          folder: "products",
+        });
+      });
+      // Chờ cho tất cả upload hoàn tất
+      const results = await Promise.all(uploadPromises);
+      console.log("««««« results »»»»»", results);
+      // Cập nhật thông tin trong dataInsert với kết quả từ Cloudinary
+      dataInsert.forEach((file, index) => {
+        file.url = results[index].secure_url;
+        file.publicId = results[index].public_id;
+        file.name = results[index].original_filename;
+        file.size = results[index].bytes;
+      });
       let result = await newRecord.save();
 
       if (result) {

@@ -1,27 +1,29 @@
 const multer = require("multer");
-const fs = require("fs");
+const path = require("path");
+// Cấu hình lưu trữ tạm thời cho file
+const storage = multer.diskStorage({
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
 
-const { toSafeFileName } = require("../utils/MongoDbHelper");
+// Kiểm tra loại file và kích thước
+const fileFilter = (req, file, cb) => {
+  const filetypes = /jpeg|jpg|png|gif|mp4/;
+  const mimetype = filetypes.test(file.mimetype);
+  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 
-const UPLOAD_DIRECTORY = "./public/uploads";
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error("Loại file không hợp lệ"));
+  }
+};
 
 const upload = multer({
-  storage: multer.diskStorage({
-    contentType: multer.AUTO_CONTENT_TYPE,
-    destination: function (req, file, callback) {
-      // const { id, collectionName } = req.params;
-
-      const PATH = `${UPLOAD_DIRECTORY}/media/${file.fieldname}`;
-      if (!fs.existsSync(PATH)) {
-        fs.mkdirSync(PATH, { recursive: true });
-      }
-      callback(null, PATH);
-    },
-    filename: function (req, file, callback) {
-      const safeFileName = toSafeFileName(file.originalname);
-      callback(null, safeFileName);
-    },
-  }),
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });
 
 module.exports = upload;
